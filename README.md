@@ -39,3 +39,8 @@ scikit-learn
 
 b. Lalu buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
+
+2. Training model
+python train.py
+4. Jalankan aplikasi
+python app.py
