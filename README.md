@@ -40,7 +40,7 @@ scikit-learn
 b. Lalu buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
 
-2. Train Model LSTM
+D. Train Model LSTM
 a. Jalankan perintah berikut di terminal:
 python train_model.py
 b. Tunggu hingga proses training selesai
