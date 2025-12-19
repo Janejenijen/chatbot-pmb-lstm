@@ -16,25 +16,20 @@ B. Teknologi
 - LSTM
 
 Struktur folder:
-chatbot-pmb-lstm/
-│
-├── app.py
-├── train_model.py
-├── requirements.txt
-│
-├── dataset/
-│   └── intents.json
-│
-├── model/
-│
-├── templates/
-│   └── index.html
-│
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── chat.js
+chatbot-pmb-lstm
+  app.py
+  train_model.py
+  dependency.txt 
+dataset/
+  intents.json
+model/
+templates/
+  index.html
+static/
+  css/
+    style.css
+  js/
+    chat.js
 
 * isi folder model adalah tambahan file ketika training dijalankan
 
