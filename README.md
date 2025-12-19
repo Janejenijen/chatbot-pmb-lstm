@@ -15,12 +15,16 @@ B. Teknologi
 - TensorFlow 2.19.0
 - LSTM
 
-Folder dan file awal chatbot-pmb-lstm: dataset, model, templates, static, app.py, train_model.py, dependency.txt 
-dataset: intents.json
-templates: index.html
-static: 
+Folder dan file awal chatbot-pmb-lstm: 
+a. dataset,
+- intents.json
+b. model, 
+c. templates,
+- index.html
+d. static, 
 - css: style.css
 - js: chat.js
+e. app.py, train_model.py, dependency.txt 
 
 * isi folder model adalah tambahan file ketika training dijalankan
 
