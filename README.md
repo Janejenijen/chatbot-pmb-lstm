@@ -20,6 +20,7 @@ A. dataset
 - intents.json
 
 B. model
+* isi folder model adalah tambahan file ketika training dijalankan
 
 C. templates
 - index.html
@@ -30,10 +31,14 @@ D. static
 
 E. app.py, train_model.py, dependency.txt 
 
-* isi folder model adalah tambahan file ketika training dijalankan
+
 
 C. Cara Menjalankan 
 1. Install software dan dependency
+2. Training model:
+python train.py
+3. Jalankan aplikasi:
+python app.py
 # CARA INSTALL SOFTWARE
 - buka folder project di VS Code
 - buka terminal di VS Code
@@ -51,11 +56,7 @@ tensorflow,
 numpy,
 nltk,
 scikit-learn
-
 - Buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
 
-2. Training model:
-python train.py
-3. Jalankan aplikasi:
-python app.py
+
