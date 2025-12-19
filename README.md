@@ -1,5 +1,6 @@
 # Chatbot PMB Universitas Katolik De La Salle Manado
 Aplikasi chatbot berbasis web untuk memberikan informasi Penerimaan Mahasiswa Baru (PMB) menggunakan metode Long Short-Term Memory (LSTM).
+
 A. Fitur
 - Informasi persyaratan pendaftaran
 - Jadwal PMB
