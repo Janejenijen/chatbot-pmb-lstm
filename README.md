@@ -16,14 +16,18 @@ B. Teknologi
 - LSTM
 
 ## Folder dan file awal chatbot-pmb-lstm: 
-A. dataset,
+A. dataset
 - intents.json
-B. model, 
-C. templates,
+
+B. model
+
+C. templates
 - index.html
-D. static, 
+
+D. static
 - css: style.css
 - js: chat.js
+
 E. app.py, train_model.py, dependency.txt 
 
 * isi folder model adalah tambahan file ketika training dijalankan
@@ -31,26 +35,24 @@ E. app.py, train_model.py, dependency.txt
 C. Cara Menjalankan 
 1. Install software dan dependency
 # CARA INSTALL SOFTWARE
-a. buka folder project di VS Code
-b. buka terminal di VS Code 
-c. Pastikan Python 3.x sudah terinstall di komputer Anda. 
+- buka folder project di VS Code
+- buka terminal di VS Code
+- pastikan Python 3.x sudah terinstall di komputer Anda.
 - Cek lewat terminal: python --version
-d. Pastikan python yang dipakai VS Code benar
-- di keyboard tekan:
-Ctrl + Shift + P
-- ketik / cari:
-Python: Select Interpreter
+- Pastikan python yang dipakai VS Code benar
+- Tekan di keyboard : Ctrl + Shift + P
+- ketik / cari: Python: Select Interpreter
 - pilih versi python 3.x(yang sudah terinstall di komputer)
 
 # CARA INSTALL DEPENDENCY
-a. Buka dependency.txt, isi:
+- Buka dependency.txt, isi:
 flask,
 tensorflow,
 numpy,
 nltk,
 scikit-learn
 
-b. Lalu buka Terminal di VS Code, jalankan:
+- Buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
 
 2. Training model:
