@@ -1,0 +1,109 @@
+{
+  "intents": [
+
+    {
+      "tag": "info_pmb",
+      "patterns": [
+        "Apa itu PMB?",
+        "Informasi pendaftaran mahasiswa baru",
+        "Penerimaan mahasiswa baru",
+        "PMB itu apa?",
+        "Saya ingin tahu tentang PMB"
+      ],
+      "responses": [
+        "PMB merupakan proses penerimaan calon mahasiswa baru di Universitas Katolik De La Salle Manado."
+      ]
+    },
+
+    {
+      "tag": "persyaratan",
+      "patterns": [
+        "apakah ada berkas atau dokumen yang diperlukan untuk melakukan pendaftaran?",
+        "daftar mahasiswa baru butuh berkas apa saja ya?",
+        "kalau mau mendaftar saya perlu siapkan dokumen apa saja ya?",
+        "dokumen apa saja yang perlu disiapkan untuk melakukan pendaftaran?",
+        "apa saja berkas yang perlu saya siapkan untuk mendaftar di delasalle?",
+        "apakah calon mahasiswa perlu menyiapkan dokumen untuk mendaftar di unika de la salle manado?",
+        "kalau saya mau mendaftar disini, apakah perlu menyiapkan dokumen?",
+        "apakah perlu menyiapkan dokumen untuk mendaftar di de la salle?",
+        "berkas apa saja yang perlu disiapkan untuk mendaftar?",
+        "apa saja dokumen yang perlu disiapkan untuk mendaftar?"
+      ],
+      "responses": [
+        "Bagi calon mahasiswa yang ingin mendaftar, tidak perlu mempersiapkan berkas atau dokumen khusus pada tahap awal pendaftaran."
+      ]
+    },
+
+    {
+      "tag": "jadwal",
+      "patterns": [
+        "Kapan pendaftaran dibuka?",
+        "Jadwal pendaftaran PMB",
+        "Pendaftaran dibuka sampai kapan?",
+        "Jadwal PMB",
+        "Tanggal pendaftaran mahasiswa baru"
+      ],
+      "responses": [
+        "Jadwal pendaftaran PMB Universitas Katolik De La Salle Manado mengikuti kalender akademik yang telah ditetapkan.",
+        "Informasi jadwal pendaftaran PMB dapat dilihat melalui website resmi universitas."
+      ]
+    },
+
+    {
+      "tag": "biaya",
+      "patterns": [
+        "Berapa biaya pendaftaran?",
+        "Biaya PMB",
+        "Uang pendaftaran berapa?",
+        "Berapa biaya masuk kuliah?",
+        "Biaya pendaftaran mahasiswa baru"
+      ],
+      "responses": [
+        "Informasi mengenai biaya pendaftaran PMB dapat diperoleh melalui pihak Universitas Katolik De La Salle Manado."
+      ]
+    },
+
+    {
+      "tag": "alur",
+      "patterns": [
+        "Bagaimana alur pendaftaran?",
+        "Tahapan pendaftaran PMB",
+        "Proses pendaftaran mahasiswa baru",
+        "Langkah-langkah pendaftaran PMB",
+        "Alur masuk kuliah"
+      ],
+      "responses": [
+        "Alur pendaftaran PMB dimulai dari pengisian formulir pendaftaran, seleksi administrasi, hingga pengumuman hasil penerimaan mahasiswa baru."
+      ]
+    },
+
+    {
+      "tag": "info_kampus",
+      "patterns": [
+        "Universitas Katolik De La Salle Manado",
+        "Informasi kampus",
+        "Tentang Universitas De La Salle",
+        "Profil Universitas Katolik De La Salle Manado",
+        "De La Salle Manado"
+      ],
+      "responses": [
+        "Universitas Katolik De La Salle Manado merupakan perguruan tinggi swasta yang berlokasi di Manado."
+      ]
+    },
+
+    {
+      "tag": "kontak",
+      "patterns": [
+        "Kontak kampus",
+        "Nomor telepon universitas",
+        "Alamat kampus",
+        "Bagaimana cara menghubungi kampus?",
+        "Kontak Universitas Katolik De La Salle Manado"
+      ],
+      "responses": [
+        "Informasi kontak Universitas Katolik De La Salle Manado dapat diakses melalui website resmi universitas."
+      ]
+    }
+
+  ]
+}
