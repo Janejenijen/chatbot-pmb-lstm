@@ -20,7 +20,7 @@ chatbot-pmb-lstm
   app.py
   train_model.py
   dependency.txt 
-dataset/
+  dataset/
   intents.json
 model/
 templates/
