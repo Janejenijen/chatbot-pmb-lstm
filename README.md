@@ -6,6 +6,7 @@ A. Fitur
 - Biaya pendaftaran
 - Alur pendaftaran
 - Informasi umum kampus
+
 B. Teknologi
 - Python 3.11.7
 - Flask 3.1.0
