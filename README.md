@@ -16,15 +16,15 @@ B. Teknologi
 - LSTM
 
 Folder dan file awal chatbot-pmb-lstm: 
-a. dataset,
+A. dataset,
 - intents.json
-b. model, 
-c. templates,
+B. model, 
+C. templates,
 - index.html
-d. static, 
+D. static, 
 - css: style.css
 - js: chat.js
-e. app.py, train_model.py, dependency.txt 
+E. app.py, train_model.py, dependency.txt 
 
 * isi folder model adalah tambahan file ketika training dijalankan
 
@@ -44,16 +44,16 @@ Python: Select Interpreter
 
 # CARA INSTALL DEPENDENCY
 a. Buka dependency.txt, isi:
-flask
-tensorflow
-numpy
-nltk
-scikit-learn
+flask,
+tensorflow,
+numpy,
+nltk,
+scikit-learn,
 
 b. Lalu buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
 
-2. Training model
+2. Training model:
 python train.py
-4. Jalankan aplikasi
+4. Jalankan aplikasi:
 python app.py
