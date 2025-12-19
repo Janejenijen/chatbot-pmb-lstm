@@ -39,13 +39,3 @@ scikit-learn
 
 b. Lalu buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
-
-D. Train Model LSTM
-a. Jalankan perintah berikut di terminal:
-python train_model.py
-b. Tunggu hingga proses training selesai
-3. Jalankan Aplikasi
-a. Jalankan perintah berikut di terminal:
-python app.py
-b. cari dan tekan http://127.0.0.1:5000
-c. tampil halaman chatbot PMB Universitas Katolik De La Salle Manado
