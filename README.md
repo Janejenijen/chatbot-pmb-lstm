@@ -15,7 +15,7 @@ B. Teknologi
 - TensorFlow 2.19.0
 - LSTM
 
-Folder dan file awal chatbot-pmb-lstm: 
+## Folder dan file awal chatbot-pmb-lstm: 
 A. dataset,
 - intents.json
 B. model, 
@@ -48,12 +48,12 @@ flask,
 tensorflow,
 numpy,
 nltk,
-scikit-learn,
+scikit-learn
 
 b. Lalu buka Terminal di VS Code, jalankan:
 pip install -r dependency.txt
 
 2. Training model:
 python train.py
-4. Jalankan aplikasi:
+3. Jalankan aplikasi:
 python app.py
