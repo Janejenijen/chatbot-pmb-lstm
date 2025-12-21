@@ -1,0 +1,17 @@
+# FastAPI and server
+fastapi
+uvicorn[standard]
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+# Configuration
+pydantic-settings
+python-dotenv
+
+# Machine Learning
+tensorflow
+numpy
+nltk
+scikit-learn
