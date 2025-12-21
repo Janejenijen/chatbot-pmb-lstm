@@ -40,9 +40,13 @@ function IntentPage() {
     try {
       const res = await fetch(`${API_URL}/intents/retrain`, { method: 'POST' })
       const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.detail || 'Gagal melatih model')
+      
       alert(data.message)
     } catch (err) {
-      alert('Gagal melatih model')
+      console.error(err)
+      alert(`Error: ${err.message}`)
     } finally {
       setIsRetraining(false)
     }
@@ -59,20 +63,26 @@ function IntentPage() {
     }
 
     try {
+      let res
       if (editingIntent) {
         // Update
-        await fetch(`${API_URL}/intents/${editingIntent.id}`, {
+        res = await fetch(`${API_URL}/intents/${editingIntent.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
       } else {
         // Create
-        await fetch(`${API_URL}/intents/`, {
+        res = await fetch(`${API_URL}/intents/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
+      }
+      
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to save intent')
       }
       
       setShowForm(false)
@@ -80,13 +90,16 @@ function IntentPage() {
       fetchIntents()
       setFormData({ tag: '', patterns: '', responses: '' })
     } catch (err) {
-      alert('Failed to save intent')
+      console.error(err)
+      alert(`Error saving intent: ${err.message}`)
     }
   }
 
   const handleEdit = async (id) => {
     try {
       const res = await fetch(`${API_URL}/intents/${id}`)
+      if (!res.ok) throw new Error('Failed to fetch details')
+      
       const data = await res.json()
       setEditingIntent(data)
       setFormData({
@@ -97,16 +110,22 @@ function IntentPage() {
       setShowForm(true)
     } catch (err) {
       console.error(err)
+      alert(`Error: ${err.message}`)
     }
   }
 
   const handleDelete = async (id) => {
     if (!confirm('Hapus intent ini?')) return
     try {
-      await fetch(`${API_URL}/intents/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_URL}/intents/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to delete')
+      }
       fetchIntents()
     } catch (err) {
-      alert('Failed to delete')
+      console.error(err)
+      alert(`Error deleting: ${err.message}`)
     }
   }
 
