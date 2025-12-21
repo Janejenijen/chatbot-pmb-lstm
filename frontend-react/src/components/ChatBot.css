@@ -321,3 +321,15 @@
 .chatbot-messages::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+@media (max-width: 768px) {
+  .chatbot-container {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .chat-page {
+    padding: 0;
+  }
+}
