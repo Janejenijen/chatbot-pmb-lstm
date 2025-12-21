@@ -7,6 +7,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from schema.models import ChatLog, Intent
 from config.settings import get_settings
+from utils.nlp_utils import preprocess_text
 
 
 settings = get_settings()
@@ -51,8 +52,12 @@ class ChatService:
         if self._model is None or self._tokenizer is None or self._encoder is None:
             return None, 0.0
         
+        # Preprocess message
+        processed_message = preprocess_text(message)
+        print(f"[NLP-Predict] Original: '{message}' -> Processed: '{processed_message}'")
+        
         # Tokenize and pad
-        seq = self._tokenizer.texts_to_sequences([message])
+        seq = self._tokenizer.texts_to_sequences([processed_message])
         pad = pad_sequences(seq, maxlen=self._max_len)
         
         # Predict

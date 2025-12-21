@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from service.intent_service import IntentService
 from config.settings import get_settings
+from utils.nlp_utils import preprocess_text
 
 
 settings = get_settings()
@@ -37,6 +38,16 @@ class TrainingService:
             
             if len(set(labels)) < 2:
                 return False, "Need at least 2 different intents for training."
+            
+            # Preprocess sentences
+            print(f"\n[NLP] Starting preprocessing for {len(sentences)} sentences...")
+            processed_sentences = []
+            for i, s in enumerate(sentences):
+                processed = preprocess_text(s)
+                processed_sentences.append(processed)
+                print(f"[NLP] Processing: '{s}' -> '{processed}'")
+            sentences = processed_sentences
+            print("[NLP] Preprocessing completed.\n")
             
             # Encode labels
             encoder = LabelEncoder()

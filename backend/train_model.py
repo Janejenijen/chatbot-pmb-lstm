@@ -7,6 +7,7 @@ from tensorflow.keras.layers import Embedding, LSTM, Dense
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import LabelEncoder
+from utils.nlp_utils import preprocess_text
 
 nltk.download('punkt')
 
@@ -19,7 +20,9 @@ labels = []
 
 for intent in data['intents']:
     for pattern in intent['patterns']:
-        sentences.append(pattern)
+        processed = preprocess_text(pattern)
+        print(f"Processing: {pattern} -> {processed}")
+        sentences.append(processed)
         labels.append(intent['tag'])
 
 # Encode labels
