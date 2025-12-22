@@ -145,6 +145,15 @@ class ChatService:
             .order_by(ChatLog.created_at.desc())\
             .all()
     
+    def mark_as_processed(self, log_id: int) -> bool:
+        """Mark a chat log as processed (not new data)."""
+        log = self.db.query(ChatLog).filter(ChatLog.id == log_id).first()
+        if log:
+            log.is_new_data = False
+            self.db.commit()
+            return True
+        return False
+
     def chat(self, message: str) -> Tuple[str, Optional[str], float]:
         """
         Main chat function: process message, save to DB, return response.

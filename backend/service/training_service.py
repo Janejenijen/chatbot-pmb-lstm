@@ -24,7 +24,7 @@ class TrainingService:
         self.db = db
         self.intent_service = IntentService(db)
     
-    def train_model(self, epochs: int = 100) -> Tuple[bool, str]:
+    def train_model(self, epochs: int = 50) -> Tuple[bool, str]:
         """
         Train LSTM model using data from database.
         Returns (success, message).

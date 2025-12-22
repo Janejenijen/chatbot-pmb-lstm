@@ -28,3 +28,9 @@ class ChatLogResponse(BaseModel):
 class ChatHistoryResponse(BaseModel):
     total: int
     logs: list[ChatLogResponse]
+
+
+class AssignIntentRequest(BaseModel):
+    log_id: int
+    intent_id: int
+    pattern_text: str  # The text to add as pattern

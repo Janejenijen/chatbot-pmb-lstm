@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from controller.chat_controller import ChatController
-from schemas.chat import ChatRequest, ChatResponse, ChatHistoryResponse
+from schemas.chat import ChatRequest, ChatResponse, ChatHistoryResponse, AssignIntentRequest
 
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -45,3 +45,11 @@ def get_new_data_candidates(db: Session = Depends(get_db)):
     """
     controller = ChatController(db)
     return controller.get_new_data()
+
+@router.post("/assign")
+def assign_to_intent(request: AssignIntentRequest, db: Session = Depends(get_db)):
+    """
+    Assign a new user question to an intent and mark it as processed.
+    """
+    controller = ChatController(db)
+    return controller.assign_to_intent(request)
