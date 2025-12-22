@@ -76,16 +76,20 @@ def sync_from_json(db: Session = Depends(get_db)):
 @router.post("/retrain")
 def retrain_model(
     epochs: int = Query(default=100, ge=10, le=500, description="Number of training epochs"),
+    split_ratio: str = Query(default="70:30", regex="^(70:30|80:20)$", description="Train:Test split ratio"),
     db: Session = Depends(get_db)
 ):
     """
     Retrain the LSTM model using data from the database.
     
+    - **epochs**: Number of training epochs (10-500)
+    - **split_ratio**: Data split ratio - "70:30" or "80:20"
     - Training uses all intents and patterns in the database
     - After training, the new model is automatically loaded
+    - Training history is saved to database
     """
     controller = IntentController(db)
-    return controller.retrain_model(epochs=epochs)
+    return controller.retrain_model(epochs=epochs, split_ratio=split_ratio)
 
 
 @router.post("/export")

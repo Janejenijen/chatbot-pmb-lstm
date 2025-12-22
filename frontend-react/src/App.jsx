@@ -4,6 +4,8 @@ import AdminLayout from './layouts/AdminLayout'
 import IntentPage from './pages/IntentPage'
 import IntentDetailPage from './pages/IntentDetailPage'
 import HistoryPage from './pages/HistoryPage'
+import TrainingHistoryPage from './pages/TrainingHistoryPage'
+import TrainingDetailPage from './pages/TrainingDetailPage'
 import './index.css'
 
 function App() {
@@ -18,9 +20,12 @@ function App() {
         <Route path="intents" element={<IntentPage />} />
         <Route path="intents/:id" element={<IntentDetailPage />} />
         <Route path="history" element={<HistoryPage />} />
+        <Route path="training" element={<TrainingHistoryPage />} />
+        <Route path="training/:id" element={<TrainingDetailPage />} />
       </Route>
     </Routes>
   )
 }
 
 export default App
+

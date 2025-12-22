@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Trash2, Edit2, Plus, Brain, Database, Check, ChevronRight, X } from 'lucide-react'
+import { Trash2, Edit2, Plus, Brain, Database, Check, ChevronRight, X, Settings } from 'lucide-react'
 
 const API_URL = 'http://localhost:8000/api'
 
@@ -17,6 +17,11 @@ function IntentPage() {
   // New Intent Modal State
   const [showNewIntentModal, setShowNewIntentModal] = useState(false)
   const [newIntentTag, setNewIntentTag] = useState('')
+
+  // Retrain Modal State
+  const [showRetrainModal, setShowRetrainModal] = useState(false)
+  const [retrainEpochs, setRetrainEpochs] = useState(100)
+  const [retrainSplitRatio, setRetrainSplitRatio] = useState('70:30')
 
   /* New Data State */
   const [newData, setNewData] = useState([])
@@ -51,17 +56,25 @@ function IntentPage() {
   }
 
   const handleRetrain = async () => {
-    if (!confirm('Apakah anda yakin ingin melatih ulang model? Ini mungkin memakan waktu.')) return
-    
+    setShowRetrainModal(false)
     setIsRetraining(true)
+    
     try {
-      const res = await fetch(`${API_URL}/intents/retrain`, { method: 'POST' })
+      const res = await fetch(
+        `${API_URL}/intents/retrain?epochs=${retrainEpochs}&split_ratio=${retrainSplitRatio}`, 
+        { method: 'POST' }
+      )
       const data = await res.json()
       
       if (!res.ok) throw new Error(data.detail || 'Gagal melatih model')
       
-      alert(data.message)
-      fetchNewData()
+      // Navigate to training detail page
+      if (data.training_id) {
+        navigate(`/admin/training/${data.training_id}`)
+      } else {
+        alert(data.message)
+        fetchNewData()
+      }
     } catch (err) {
       console.error(err)
       alert(`Error: ${err.message}`)
@@ -103,8 +116,7 @@ function IntentPage() {
         
         setShowAssignModal(false)
         setSelectedLog(null)
-        fetchNewData() // Refresh list
-        // fetchIntents() // Optional: refresh counts
+        fetchNewData()
     } catch (err) {
         alert(err.message)
     }
@@ -127,7 +139,6 @@ function IntentPage() {
           const data = await res.json()
           setShowNewIntentModal(false)
           setNewIntentTag('')
-          // Navigate to new detail
           navigate(`/admin/intents/${data.id}`)
       } catch (err) {
           alert(err.message)
@@ -146,7 +157,7 @@ function IntentPage() {
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
             className="btn btn-secondary" 
-            onClick={handleRetrain} 
+            onClick={() => setShowRetrainModal(true)} 
             disabled={isRetraining}
           >
             {isRetraining ? (
@@ -249,6 +260,113 @@ function IntentPage() {
           </tbody>
         </table>
       </div>
+      
+      {/* Retrain Modal */}
+      {showRetrainModal && (
+          <div style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+              <div style={{ background: 'white', padding: '24px', borderRadius: '8px', width: '420px', maxWidth: '90%' }}>
+                  <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Brain size={24} color="#3b82f6" />
+                    Konfigurasi Training
+                  </h3>
+                  
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ fontWeight: '500', marginBottom: '6px', display: 'block' }}>
+                        Split Ratio (Train : Test)
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <label style={{ 
+                          flex: 1, 
+                          padding: '12px', 
+                          border: retrainSplitRatio === '70:30' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                          borderRadius: '8px', 
+                          cursor: 'pointer',
+                          background: retrainSplitRatio === '70:30' ? '#eff6ff' : 'white',
+                          textAlign: 'center'
+                        }}>
+                          <input 
+                            type="radio" 
+                            name="splitRatio" 
+                            value="70:30"
+                            checked={retrainSplitRatio === '70:30'}
+                            onChange={(e) => setRetrainSplitRatio(e.target.value)}
+                            style={{ display: 'none' }}
+                          />
+                          <div style={{ fontWeight: '600', fontSize: '18px' }}>70 : 30</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Train : Test</div>
+                        </label>
+                        <label style={{ 
+                          flex: 1, 
+                          padding: '12px', 
+                          border: retrainSplitRatio === '80:20' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                          borderRadius: '8px', 
+                          cursor: 'pointer',
+                          background: retrainSplitRatio === '80:20' ? '#eff6ff' : 'white',
+                          textAlign: 'center'
+                        }}>
+                          <input 
+                            type="radio" 
+                            name="splitRatio" 
+                            value="80:20"
+                            checked={retrainSplitRatio === '80:20'}
+                            onChange={(e) => setRetrainSplitRatio(e.target.value)}
+                            style={{ display: 'none' }}
+                          />
+                          <div style={{ fontWeight: '600', fontSize: '18px' }}>80 : 20</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Train : Test</div>
+                        </label>
+                      </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '20px' }}>
+                      <label style={{ fontWeight: '500', marginBottom: '6px', display: 'block' }}>
+                        Epochs
+                      </label>
+                      <input 
+                        type="number" 
+                        className="form-control"
+                        value={retrainEpochs} 
+                        onChange={(e) => setRetrainEpochs(parseInt(e.target.value) || 100)}
+                        min={10}
+                        max={500}
+                        style={{ width: '100%' }}
+                      />
+                      <small style={{ color: '#64748b' }}>Jumlah iterasi training (10-500)</small>
+                  </div>
+
+                  <div style={{ 
+                    background: '#f8fafc', 
+                    padding: '12px', 
+                    borderRadius: '8px', 
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                    color: '#64748b'
+                  }}>
+                    <strong>Info:</strong> Training akan menggunakan {intents.length} intents dari database. 
+                    Hasil training akan disimpan di Training History.
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        className="btn btn-primary" 
+                        onClick={handleRetrain}
+                        style={{ flex: 1 }}
+                      >
+                        <Brain size={18} /> Mulai Training
+                      </button>
+                      <button 
+                        className="btn btn-secondary" 
+                        onClick={() => setShowRetrainModal(false)}
+                      >
+                        Batal
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
       
       {/* Assign Modal */}
       {showAssignModal && (

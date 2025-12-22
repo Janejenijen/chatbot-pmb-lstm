@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, MessageSquare, History, Settings, Menu, X } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, History, Settings, Menu, X, BarChart3 } from 'lucide-react'
 import './AdminLayout.css'
 
 function AdminLayout() {
@@ -64,6 +64,14 @@ function AdminLayout() {
           >
             <History size={20} />
             <span>Chat History</span>
+          </NavLink>
+          <NavLink 
+            to="/admin/training" 
+            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={closeSidebar}
+          >
+            <BarChart3 size={20} />
+            <span>Training History</span>
           </NavLink>
           <div className="nav-divider"></div>
           <NavLink 

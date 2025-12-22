@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from config.database import create_tables
 from config.settings import get_settings
-from routes import intent_routes, chat_routes
+from routes import intent_routes, chat_routes, training_routes
 
 # Import models to register them with SQLAlchemy
 from schema import models
@@ -46,6 +46,7 @@ app.add_middleware(
 # Include routers
 app.include_router(intent_routes.router, prefix=settings.API_PREFIX)
 app.include_router(chat_routes.router, prefix=settings.API_PREFIX)
+app.include_router(training_routes.router, prefix=settings.API_PREFIX)
 
 
 @app.get("/")

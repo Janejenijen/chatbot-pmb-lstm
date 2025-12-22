@@ -68,12 +68,15 @@ class IntentController:
         except FileNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e))
     
-    def retrain_model(self, epochs: int = 100) -> dict:
+    def retrain_model(self, epochs: int = 100, split_ratio: str = "70:30") -> dict:
         """Retrain the LSTM model with proper train-validation-test split."""
         # Reload chat service model after training
         from service.chat_service import ChatService
         
-        success, message, metrics = self.training_service.train_model(epochs=epochs)
+        success, message, metrics = self.training_service.train_model(
+            epochs=epochs, 
+            split_ratio=split_ratio
+        )
         if not success:
             raise HTTPException(status_code=400, detail=message)
         
@@ -82,12 +85,14 @@ class IntentController:
         
         return {
             "message": message,
+            "training_id": metrics.get("training_id"),
             "metrics": {
                 "total_samples": metrics.get("total_samples"),
                 "train_samples": metrics.get("train_samples"),
                 "val_samples": metrics.get("val_samples"),
                 "test_samples": metrics.get("test_samples"),
                 "epochs_run": metrics.get("epochs_run"),
+                "split_ratio": metrics.get("split_ratio"),
                 "train_accuracy": round(metrics.get("train_accuracy", 0) * 100, 2),
                 "val_accuracy": round(metrics.get("val_accuracy", 0) * 100, 2),
                 "test_accuracy": round(metrics.get("test_accuracy", 0) * 100, 2),

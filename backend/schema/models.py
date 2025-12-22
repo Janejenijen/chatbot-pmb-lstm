@@ -67,3 +67,40 @@ class ChatLog(Base):
     
     def __repr__(self):
         return f"<ChatLog(id={self.id}, intent='{self.intent_tag}')>"
+
+
+class TrainingHistory(Base):
+    """TrainingHistory table - stores training run results."""
+    __tablename__ = "training_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    trained_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Training configuration
+    epochs_requested = Column(Integer, nullable=False)
+    epochs_run = Column(Integer, nullable=False)
+    split_ratio = Column(String(10), nullable=False)  # "70:30" or "80:20"
+    batch_size = Column(Integer, nullable=False)
+    
+    # Sample counts
+    total_samples = Column(Integer, nullable=False)
+    train_samples = Column(Integer, nullable=False)
+    val_samples = Column(Integer, nullable=False)
+    test_samples = Column(Integer, nullable=False)
+    num_classes = Column(Integer, nullable=False)
+    
+    # Metrics
+    train_accuracy = Column(Float, nullable=False)
+    val_accuracy = Column(Float, nullable=False)
+    test_accuracy = Column(Float, nullable=False)
+    train_loss = Column(Float, nullable=False)
+    val_loss = Column(Float, nullable=False)
+    test_loss = Column(Float, nullable=False)
+    
+    # Confusion matrix & classification report (stored as JSON strings)
+    confusion_matrix = Column(Text, nullable=True)  # JSON 2D array
+    classification_report = Column(Text, nullable=True)  # JSON object
+    class_names = Column(Text, nullable=True)  # JSON array of class names
+    
+    def __repr__(self):
+        return f"<TrainingHistory(id={self.id}, trained_at='{self.trained_at}', test_acc={self.test_accuracy:.2f})>"
