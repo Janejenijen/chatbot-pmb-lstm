@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-from schema.models import ChatLog, Intent
+from schema.models import ChatLog, Intent, Pattern
 from config.settings import get_settings
 from utils.nlp_utils import preprocess_text
 
@@ -94,14 +94,32 @@ class ChatService:
         user_message: str, 
         bot_response: str, 
         intent_tag: Optional[str] = None,
-        confidence: Optional[float] = None
+        confidence: Optional[float] = None,
+        is_new_data: bool = True
     ) -> ChatLog:
         """Save chat interaction to database."""
+        
+        # Duplicate Check Logic
+        # 1. Check if message already exists in trained patterns (case-insensitive)
+        exists_in_patterns = self.db.query(Pattern).filter(
+            Pattern.pattern_text.ilike(user_message)
+        ).first() is not None
+        
+        # 2. Check if message already exists in new data queue (prevent duplicates in inbox)
+        exists_in_queue = self.db.query(ChatLog).filter(
+            ChatLog.user_message.ilike(user_message),
+            ChatLog.is_new_data == True
+        ).first() is not None
+        
+        # If exists in either, it's not "new data" for the dataset
+        final_is_new_data = is_new_data and not exists_in_patterns and not exists_in_queue
+        
         chat_log = ChatLog(
             user_message=user_message,
             bot_response=bot_response,
             intent_tag=intent_tag,
-            confidence=confidence
+            confidence=confidence,
+            is_new_data=final_is_new_data
         )
         self.db.add(chat_log)
         self.db.commit()
@@ -117,6 +135,15 @@ class ChatService:
             .limit(limit)\
             .all()
         return logs, total
+    
+    def get_new_data_candidates(self) -> List[ChatLog]:
+        """Get unique chat logs marked as new data."""
+        # We might want to group by user_message to be safe, but our save logic handles duplicates.
+        # Just return the latest ones or all.
+        return self.db.query(ChatLog)\
+            .filter(ChatLog.is_new_data == True)\
+            .order_by(ChatLog.created_at.desc())\
+            .all()
     
     def chat(self, message: str) -> Tuple[str, Optional[str], float]:
         """

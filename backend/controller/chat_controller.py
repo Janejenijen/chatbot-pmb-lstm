@@ -46,3 +46,17 @@ class ChatController:
                 for log in logs
             ]
         )
+        
+    def get_new_data(self):
+        """Get new data candidates."""
+        logs = self.chat_service.get_new_data_candidates()
+        return [
+            {
+                "id": log.id,
+                "user_message": log.user_message,
+                "predicted_intent": log.intent_tag,
+                "confidence": log.confidence,
+                "created_at": log.created_at
+            }
+            for log in logs
+        ]

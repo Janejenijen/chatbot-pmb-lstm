@@ -35,4 +35,13 @@ def get_chat_history(
     - Use limit and offset for pagination
     """
     controller = ChatController(db)
+    controller = ChatController(db)
     return controller.get_chat_history(limit=limit, offset=offset)
+
+@router.get("/new-data")
+def get_new_data_candidates(db: Session = Depends(get_db)):
+    """
+    Get all new user questions that haven't been trained yet.
+    """
+    controller = ChatController(db)
+    return controller.get_new_data()

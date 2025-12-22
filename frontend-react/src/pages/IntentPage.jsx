@@ -17,9 +17,25 @@ function IntentPage() {
     responses: ''
   })
 
+  /* New Data State */
+  const [newData, setNewData] = useState([])
+
   useEffect(() => {
     fetchIntents()
+    fetchNewData()
   }, [])
+
+  const fetchNewData = async () => {
+    try {
+      const res = await fetch(`${API_URL}/chat/new-data`)
+      if (res.ok) {
+        const data = await res.json()
+        setNewData(data)
+      }
+    } catch (err) {
+      console.error("Failed to fetch new data", err)
+    }
+  }
 
   const fetchIntents = async () => {
     try {
@@ -44,6 +60,8 @@ function IntentPage() {
       if (!res.ok) throw new Error(data.detail || 'Gagal melatih model')
       
       alert(data.message)
+      // Refresh to clear new data list
+      fetchNewData()
     } catch (err) {
       console.error(err)
       alert(`Error: ${err.message}`)
@@ -136,6 +154,16 @@ function IntentPage() {
     setShowForm(true)
   }
 
+  const addToForm = (text) => {
+    setShowForm(true)
+    setFormData(prev => ({
+      ...prev,
+      patterns: prev.patterns ? prev.patterns + '\n' + text : text
+    }))
+    // Optional: remove from list locally or let refresh handle it? 
+    // Usually user wants it to stay until retrain, but maybe we can just copy it.
+  }
+
   if (loading) return <div>Loading...</div>
 
   return (
@@ -162,6 +190,50 @@ function IntentPage() {
           </button>
         </div>
       </div>
+
+      {newData.length > 0 && (
+        <div className="card" style={{ marginBottom: '24px', border: '1px solid #3b82f6' }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eff6ff' }}>
+            <h3 style={{ margin: 0, color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Database size={18} />
+              Inbox Pertanyaan Baru ({newData.length})
+            </h3>
+            <small style={{ color: '#1e40af' }}>Data ini belum dilatih</small>
+          </div>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+              <thead style={{ position: 'sticky', top: 0, background: '#fff' }}>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px' }}>Pertanyaan User</th>
+                  <th style={{ padding: '12px' }}>Prediksi Intent</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {newData.map((item) => (
+                  <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', fontWeight: '500' }}>{item.user_message}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span className="badge" style={{ background: '#e2e8f0', color: '#475569' }}>
+                        {item.predicted_intent || '?'} ({Math.round(item.confidence * 100)}%)
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                      <button 
+                        className="btn btn-sm" 
+                        style={{ fontSize: '12px', padding: '4px 8px', background: '#3b82f6', color: 'white' }}
+                        onClick={() => addToForm(item.user_message)}
+                      >
+                        <Plus size={14} style={{ marginRight: '4px' }}/> Tambah
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>

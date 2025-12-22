@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config.database import Base
@@ -62,6 +62,7 @@ class ChatLog(Base):
     bot_response = Column(Text, nullable=False)
     intent_tag = Column(String(100), nullable=True)
     confidence = Column(Float, nullable=True)
+    is_new_data = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     def __repr__(self):

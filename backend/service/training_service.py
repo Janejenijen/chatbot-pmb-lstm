@@ -82,6 +82,11 @@ class TrainingService:
             # Get final accuracy
             final_accuracy = history.history['accuracy'][-1] * 100
             
+            # Update is_new_data to False for all chat logs
+            from schema.models import ChatLog
+            self.db.query(ChatLog).filter(ChatLog.is_new_data == True).update({ChatLog.is_new_data: False})
+            self.db.commit()
+            
             return True, f"Model trained successfully! Final accuracy: {final_accuracy:.2f}%"
             
         except Exception as e:
