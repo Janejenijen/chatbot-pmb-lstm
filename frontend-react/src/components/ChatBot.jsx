@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import './ChatBot.css'
 import logoDelasalle from '../assets/logo-delasalle.png'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = 'http://localhost:8000/api'
 
 function ChatBot() {
   const [messages, setMessages] = useState([
@@ -42,7 +42,7 @@ function ChatBot() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

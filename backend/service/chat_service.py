@@ -19,7 +19,7 @@ class ChatService:
     _model = None
     _tokenizer = None
     _encoder = None
-    _max_len = 20
+    _max_len = None  # Will be set from settings
     
     def __init__(self, db: Session):
         self.db = db
@@ -33,11 +33,13 @@ class ChatService:
                 cls._model = load_model(settings.MODEL_PATH)
                 cls._tokenizer = pickle.load(open(settings.TOKENIZER_PATH, 'rb'))
                 cls._encoder = pickle.load(open(settings.ENCODER_PATH, 'rb'))
+                cls._max_len = settings.MAX_SEQUENCE_LENGTH
             except Exception as e:
                 print(f"Warning: Could not load model files: {e}")
                 cls._model = None
                 cls._tokenizer = None
                 cls._encoder = None
+                cls._max_len = settings.MAX_SEQUENCE_LENGTH
     
     @classmethod
     def reload_model(cls):

@@ -35,7 +35,6 @@ def get_chat_history(
     - Use limit and offset for pagination
     """
     controller = ChatController(db)
-    controller = ChatController(db)
     return controller.get_chat_history(limit=limit, offset=offset)
 
 @router.get("/new-data")

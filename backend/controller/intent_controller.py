@@ -69,18 +69,30 @@ class IntentController:
             raise HTTPException(status_code=404, detail=str(e))
     
     def retrain_model(self, epochs: int = 100) -> dict:
-        """Retrain the LSTM model."""
+        """Retrain the LSTM model with proper train-validation-test split."""
         # Reload chat service model after training
         from service.chat_service import ChatService
         
-        success, message = self.training_service.train_model(epochs=epochs)
+        success, message, metrics = self.training_service.train_model(epochs=epochs)
         if not success:
             raise HTTPException(status_code=400, detail=message)
         
         # Reload the model in chat service
         ChatService.reload_model()
         
-        return {"message": message}
+        return {
+            "message": message,
+            "metrics": {
+                "total_samples": metrics.get("total_samples"),
+                "train_samples": metrics.get("train_samples"),
+                "val_samples": metrics.get("val_samples"),
+                "test_samples": metrics.get("test_samples"),
+                "epochs_run": metrics.get("epochs_run"),
+                "train_accuracy": round(metrics.get("train_accuracy", 0) * 100, 2),
+                "val_accuracy": round(metrics.get("val_accuracy", 0) * 100, 2),
+                "test_accuracy": round(metrics.get("test_accuracy", 0) * 100, 2),
+            }
+        }
     
     def export_to_json(self) -> dict:
         """Export intents to JSON file."""

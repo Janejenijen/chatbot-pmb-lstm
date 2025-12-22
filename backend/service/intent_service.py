@@ -101,8 +101,6 @@ class IntentService:
         
         self.db.delete(intent)
         self.db.commit()
-        self.db.delete(intent)
-        self.db.commit()
         return True
     
     def add_pattern(self, intent_id: int, pattern_text: str) -> Pattern:

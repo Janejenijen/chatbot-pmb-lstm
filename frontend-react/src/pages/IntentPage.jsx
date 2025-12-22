@@ -118,8 +118,8 @@ function IntentPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                   tag: newIntentTag,
-                  patterns: [],
-                  responses: []
+                  patterns: ['Contoh pertanyaan'],
+                  responses: ['Contoh jawaban']
               })
           })
           if (!res.ok) throw new Error('Failed')

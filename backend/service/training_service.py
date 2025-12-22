@@ -1,13 +1,16 @@
 import json
 import pickle
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Dict, Any
 from sqlalchemy.orm import Session
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
 
 from service.intent_service import IntentService
 from config.settings import get_settings
@@ -18,26 +21,26 @@ settings = get_settings()
 
 
 class TrainingService:
-    """Service for training the LSTM model."""
+    """Service for training the LSTM model with proper ML methodology."""
     
     def __init__(self, db: Session):
         self.db = db
         self.intent_service = IntentService(db)
     
-    def train_model(self, epochs: int = 50) -> Tuple[bool, str]:
+    def train_model(self, epochs: int = 100) -> Tuple[bool, str, Dict[str, Any]]:
         """
-        Train LSTM model using data from database.
-        Returns (success, message).
+        Train LSTM model using data from database with proper train-validation-test split.
+        Returns (success, message, metrics).
         """
         try:
             # Get training data from database
             sentences, labels = self.intent_service.get_training_data()
             
             if len(sentences) == 0:
-                return False, "No training data found in database. Please add intents first."
+                return False, "No training data found in database. Please add intents first.", {}
             
             if len(set(labels)) < 2:
-                return False, "Need at least 2 different intents for training."
+                return False, "Need at least 2 different intents for training.", {}
             
             # Preprocess sentences
             print(f"\n[NLP] Starting preprocessing for {len(sentences)} sentences...")
@@ -52,18 +55,47 @@ class TrainingService:
             # Encode labels
             encoder = LabelEncoder()
             encoded_labels = encoder.fit_transform(labels)
+            num_classes = len(set(labels))
             
             # Tokenize
             tokenizer = Tokenizer()
             tokenizer.fit_on_texts(sentences)
             sequences = tokenizer.texts_to_sequences(sentences)
-            padded = pad_sequences(sequences, maxlen=20)
+            X = pad_sequences(sequences, maxlen=settings.MAX_SEQUENCE_LENGTH)
+            y = np.array(encoded_labels)
             
-            # Build model
+            # ========== TRAIN-VALIDATION-TEST SPLIT ==========
+            # First split: separate test set (15%)
+            X_temp, X_test, y_temp, y_test = train_test_split(
+                X, y, 
+                test_size=settings.TEST_SPLIT, 
+                random_state=42, 
+                stratify=y
+            )
+            
+            # Second split: separate validation from training (15% of remaining = ~17.6% of temp)
+            val_ratio = settings.VALIDATION_SPLIT / (1 - settings.TEST_SPLIT)
+            X_train, X_val, y_train, y_val = train_test_split(
+                X_temp, y_temp, 
+                test_size=val_ratio, 
+                random_state=42, 
+                stratify=y_temp
+            )
+            
+            print(f"\n[SPLIT] Dataset split:")
+            print(f"  - Training:   {len(X_train)} samples ({len(X_train)/len(X)*100:.1f}%)")
+            print(f"  - Validation: {len(X_val)} samples ({len(X_val)/len(X)*100:.1f}%)")
+            print(f"  - Testing:    {len(X_test)} samples ({len(X_test)/len(X)*100:.1f}%)")
+            print(f"  - Total:      {len(X)} samples\n")
+            
+            # ========== BUILD MODEL ==========
             model = Sequential()
-            model.add(Embedding(len(tokenizer.word_index) + 1, 16, input_length=padded.shape[1]))
-            model.add(LSTM(16))
-            model.add(Dense(len(set(labels)), activation='softmax'))
+            model.add(Embedding(len(tokenizer.word_index) + 1, 32, input_length=X.shape[1]))
+            model.add(LSTM(32, return_sequences=False))
+            model.add(Dropout(0.3))
+            model.add(Dense(16, activation='relu'))
+            model.add(Dropout(0.2))
+            model.add(Dense(num_classes, activation='softmax'))
             
             model.compile(
                 loss='sparse_categorical_crossentropy',
@@ -71,26 +103,83 @@ class TrainingService:
                 metrics=['accuracy']
             )
             
-            # Train
-            history = model.fit(padded, encoded_labels, epochs=epochs, verbose=1)
+            # Early stopping to prevent overfitting
+            early_stopping = EarlyStopping(
+                monitor='val_loss',
+                patience=10,
+                restore_best_weights=True,
+                verbose=1
+            )
             
-            # Save model and artifacts
+            # ========== TRAIN WITH VALIDATION ==========
+            print(f"[TRAIN] Starting training with {epochs} epochs, batch_size={settings.BATCH_SIZE}")
+            history = model.fit(
+                X_train, y_train,
+                epochs=epochs,
+                batch_size=settings.BATCH_SIZE,
+                validation_data=(X_val, y_val),
+                callbacks=[early_stopping],
+                verbose=1
+            )
+            
+            # ========== EVALUATE ON TEST SET ==========
+            print("\n[EVAL] Evaluating on test set...")
+            test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=0)
+            
+            # Get predictions for classification report
+            y_pred = model.predict(X_test, verbose=0)
+            y_pred_classes = np.argmax(y_pred, axis=1)
+            
+            # Classification report
+            class_names = encoder.classes_
+            report = classification_report(y_test, y_pred_classes, target_names=class_names, output_dict=True)
+            report_str = classification_report(y_test, y_pred_classes, target_names=class_names)
+            
+            print("\n[EVAL] Classification Report:")
+            print(report_str)
+            
+            # ========== SAVE MODEL AND ARTIFACTS ==========
             model.save(settings.MODEL_PATH)
             pickle.dump(tokenizer, open(settings.TOKENIZER_PATH, 'wb'))
             pickle.dump(encoder, open(settings.ENCODER_PATH, 'wb'))
             
-            # Get final accuracy
-            final_accuracy = history.history['accuracy'][-1] * 100
+            # Prepare metrics
+            metrics = {
+                "total_samples": len(X),
+                "train_samples": len(X_train),
+                "val_samples": len(X_val),
+                "test_samples": len(X_test),
+                "num_classes": num_classes,
+                "epochs_run": len(history.history['loss']),
+                "batch_size": settings.BATCH_SIZE,
+                "train_accuracy": float(history.history['accuracy'][-1]),
+                "train_loss": float(history.history['loss'][-1]),
+                "val_accuracy": float(history.history['val_accuracy'][-1]),
+                "val_loss": float(history.history['val_loss'][-1]),
+                "test_accuracy": float(test_accuracy),
+                "test_loss": float(test_loss),
+                "classification_report": report
+            }
             
             # Update is_new_data to False for all chat logs
             from schema.models import ChatLog
             self.db.query(ChatLog).filter(ChatLog.is_new_data == True).update({ChatLog.is_new_data: False})
             self.db.commit()
             
-            return True, f"Model trained successfully! Final accuracy: {final_accuracy:.2f}%"
+            message = (
+                f"Model trained successfully!\n"
+                f"• Training Accuracy: {metrics['train_accuracy']*100:.2f}%\n"
+                f"• Validation Accuracy: {metrics['val_accuracy']*100:.2f}%\n"
+                f"• Test Accuracy: {metrics['test_accuracy']*100:.2f}%\n"
+                f"• Epochs: {metrics['epochs_run']}/{epochs}"
+            )
+            
+            return True, message, metrics
             
         except Exception as e:
-            return False, f"Training failed: {str(e)}"
+            import traceback
+            traceback.print_exc()
+            return False, f"Training failed: {str(e)}", {}
     
     def export_dataset_to_json(self) -> Tuple[bool, str]:
         """Export database intents to JSON file."""
