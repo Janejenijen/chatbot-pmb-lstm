@@ -52,3 +52,20 @@ def assign_to_intent(request: AssignIntentRequest, db: Session = Depends(get_db)
     """
     controller = ChatController(db)
     return controller.assign_to_intent(request)
+
+
+@router.post("/dismiss/{log_id}")
+def dismiss_new_data(log_id: int, db: Session = Depends(get_db)):
+    """
+    Dismiss a new data entry (mark as processed without adding to dataset).
+    Sets is_new_data = False so it won't appear in the new data inbox.
+    """
+    from service.chat_service import ChatService
+    service = ChatService(db)
+    success = service.mark_as_processed(log_id)
+    
+    if not success:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Data tidak ditemukan")
+    
+    return {"message": "Data berhasil di-dismiss"}

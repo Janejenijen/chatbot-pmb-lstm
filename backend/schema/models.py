@@ -104,3 +104,20 @@ class TrainingHistory(Base):
     
     def __repr__(self):
         return f"<TrainingHistory(id={self.id}, trained_at='{self.trained_at}', test_acc={self.test_accuracy:.2f})>"
+
+
+class User(Base):
+    """User table - stores user accounts with roles."""
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    whatsapp = Column(String(20), nullable=True)
+    role = Column(String(20), default="user", nullable=False)  # "admin" or "user"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    def __repr__(self):
+        return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"

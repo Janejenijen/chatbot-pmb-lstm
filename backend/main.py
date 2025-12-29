@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from config.database import create_tables
 from config.settings import get_settings
-from routes import intent_routes, chat_routes, training_routes
+from routes import intent_routes, chat_routes, training_routes, auth_routes
 
 # Import models to register them with SQLAlchemy
 from schema import models
@@ -21,6 +21,17 @@ async def lifespan(app: FastAPI):
     print("Creating database tables...")
     create_tables()
     print("Database tables created successfully!")
+    
+    # Create initial admin if not exists
+    from config.database import SessionLocal
+    from service.auth_service import AuthService
+    db = SessionLocal()
+    try:
+        auth_service = AuthService(db)
+        auth_service.create_initial_admin()
+    finally:
+        db.close()
+    
     yield
     # Shutdown
     print("Application shutting down...")
@@ -44,6 +55,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth_routes.router, prefix=settings.API_PREFIX)
 app.include_router(intent_routes.router, prefix=settings.API_PREFIX)
 app.include_router(chat_routes.router, prefix=settings.API_PREFIX)
 app.include_router(training_routes.router, prefix=settings.API_PREFIX)

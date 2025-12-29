@@ -80,7 +80,7 @@ function ChatBot() {
     'Apa itu PMB?',
     'Jadwal pendaftaran',
     'Biaya pendaftaran',
-    'Persyaratan',
+    'Persyaratan Pendaftaran',
   ]
 
   const handleSuggestionClick = (question) => {
