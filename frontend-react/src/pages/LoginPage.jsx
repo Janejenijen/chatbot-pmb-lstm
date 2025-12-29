@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Mail, Lock, LogIn } from 'lucide-react'
+import logoDelasalle from '../assets/logo-delasalle.png'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -38,7 +39,7 @@ function LoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%)',
+      background: 'linear-gradient(135deg, #298a1a 0%, #ced50f 100%)',
       padding: '20px'
     }}>
       <div style={{
@@ -47,18 +48,23 @@ function LoginPage() {
         padding: '40px',
         width: '100%',
         maxWidth: '400px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <img 
+            src={logoDelasalle} 
+            alt="Logo De La Salle" 
+            style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '16px' }}
+          />
           <h1 style={{ 
-            fontSize: '28px', 
+            fontSize: '24px', 
             fontWeight: '700', 
-            color: '#1e3a5f',
+            color: '#298a1a',
             marginBottom: '8px'
           }}>
             Login
           </h1>
-          <p style={{ color: '#64748b' }}>Chatbot PMB - UK De La Salle</p>
+          <p style={{ color: '#64748b', fontSize: '14px' }}>Chatbot PMB - Unika De La Salle Manado</p>
         </div>
 
         {error && (
@@ -105,8 +111,12 @@ function LoginPage() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                   fontSize: '15px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#67c800'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
             </div>
           </div>
@@ -140,8 +150,12 @@ function LoginPage() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                   fontSize: '15px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#67c800'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
             </div>
           </div>
@@ -152,7 +166,7 @@ function LoginPage() {
             style={{
               width: '100%',
               padding: '14px',
-              background: loading ? '#94a3b8' : '#1e3a5f',
+              background: loading ? '#94a3b8' : 'linear-gradient(135deg, #67c800 0%, #4b9600 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -162,8 +176,12 @@ function LoginPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(103, 200, 0, 0.3)',
+              transition: 'transform 0.2s, box-shadow 0.2s'
             }}
+            onMouseOver={(e) => !loading && (e.target.style.transform = 'translateY(-1px)')}
+            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
           >
             {loading ? 'Loading...' : (
               <>
@@ -181,7 +199,7 @@ function LoginPage() {
           fontSize: '14px'
         }}>
           Belum punya akun?{' '}
-          <Link to="/register" style={{ color: '#1e3a5f', fontWeight: '600' }}>
+          <Link to="/register" style={{ color: '#298a1a', fontWeight: '600', textDecoration: 'none' }}>
             Daftar di sini
           </Link>
         </div>
@@ -190,7 +208,7 @@ function LoginPage() {
           marginTop: '16px', 
           textAlign: 'center',
         }}>
-          <Link to="/" style={{ color: '#64748b', fontSize: '14px' }}>
+          <Link to="/" style={{ color: '#64748b', fontSize: '14px', textDecoration: 'none' }}>
             ← Kembali ke Chatbot
           </Link>
         </div>

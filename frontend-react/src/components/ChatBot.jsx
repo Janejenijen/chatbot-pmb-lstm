@@ -97,7 +97,7 @@ function ChatBot() {
         </div>
         <div className="header-info">
           <h1>Chatbot PMB</h1>
-          <p>UK De La Salle Manado</p>
+          <p>Unika De La Salle Manado</p>
         </div>
         <div className="header-status">
           <span className="status-dot"></span>

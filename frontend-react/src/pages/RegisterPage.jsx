@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { User, Mail, Lock, Phone, UserPlus } from 'lucide-react'
+import logoDelasalle from '../assets/logo-delasalle.png'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -45,6 +46,20 @@ function RegisterPage() {
     }
   }
 
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 12px 12px 42px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '15px',
+    boxSizing: 'border-box',
+    outline: 'none',
+    transition: 'border-color 0.2s'
+  }
+
+  const handleFocus = (e) => e.target.style.borderColor = '#67c800'
+  const handleBlur = (e) => e.target.style.borderColor = '#e2e8f0'
+
   if (success) {
     return (
       <div style={{
@@ -52,7 +67,7 @@ function RegisterPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%)',
+        background: 'linear-gradient(135deg, #298a1a 0%, #ced50f 100%)',
         padding: '20px'
       }}>
         <div style={{
@@ -60,7 +75,7 @@ function RegisterPage() {
           borderRadius: '16px',
           padding: '40px',
           textAlign: 'center',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
         }}>
           <div style={{
             width: '64px',
@@ -87,7 +102,7 @@ function RegisterPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%)',
+      background: 'linear-gradient(135deg, #298a1a 0%, #ced50f 100%)',
       padding: '20px'
     }}>
       <div style={{
@@ -96,18 +111,23 @@ function RegisterPage() {
         padding: '40px',
         width: '100%',
         maxWidth: '450px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <img 
+            src={logoDelasalle} 
+            alt="Logo De La Salle" 
+            style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '16px' }}
+          />
           <h1 style={{ 
-            fontSize: '28px', 
+            fontSize: '24px', 
             fontWeight: '700', 
-            color: '#1e3a5f',
+            color: '#298a1a',
             marginBottom: '8px'
           }}>
             Daftar Akun
           </h1>
-          <p style={{ color: '#64748b' }}>Chatbot PMB - UK De La Salle</p>
+          <p style={{ color: '#64748b', fontSize: '14px' }}>Chatbot PMB - Unika De La Salle Manado</p>
         </div>
 
         {error && (
@@ -137,14 +157,9 @@ function RegisterPage() {
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
                 required
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 42px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  boxSizing: 'border-box'
-                }}
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
               />
             </div>
           </div>
@@ -161,14 +176,9 @@ function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@example.com"
                 required
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 42px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  boxSizing: 'border-box'
-                }}
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
               />
             </div>
           </div>
@@ -184,14 +194,9 @@ function RegisterPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="08123456789"
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 42px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  boxSizing: 'border-box'
-                }}
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
               />
             </div>
           </div>
@@ -208,14 +213,9 @@ function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimal 6 karakter"
                 required
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 42px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  boxSizing: 'border-box'
-                }}
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
               />
             </div>
           </div>
@@ -232,14 +232,9 @@ function RegisterPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Ulangi password"
                 required
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 42px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  boxSizing: 'border-box'
-                }}
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
               />
             </div>
           </div>
@@ -250,7 +245,7 @@ function RegisterPage() {
             style={{
               width: '100%',
               padding: '14px',
-              background: loading ? '#94a3b8' : '#1e3a5f',
+              background: loading ? '#94a3b8' : 'linear-gradient(135deg, #67c800 0%, #4b9600 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -260,8 +255,12 @@ function RegisterPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(103, 200, 0, 0.3)',
+              transition: 'transform 0.2s'
             }}
+            onMouseOver={(e) => !loading && (e.target.style.transform = 'translateY(-1px)')}
+            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
           >
             {loading ? 'Loading...' : (
               <>
@@ -274,13 +273,13 @@ function RegisterPage() {
 
         <div style={{ marginTop: '24px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>
           Sudah punya akun?{' '}
-          <Link to="/login" style={{ color: '#1e3a5f', fontWeight: '600' }}>
+          <Link to="/login" style={{ color: '#298a1a', fontWeight: '600', textDecoration: 'none' }}>
             Login di sini
           </Link>
         </div>
 
         <div style={{ marginTop: '16px', textAlign: 'center' }}>
-          <Link to="/" style={{ color: '#64748b', fontSize: '14px' }}>
+          <Link to="/" style={{ color: '#64748b', fontSize: '14px', textDecoration: 'none' }}>
             ← Kembali ke Chatbot
           </Link>
         </div>

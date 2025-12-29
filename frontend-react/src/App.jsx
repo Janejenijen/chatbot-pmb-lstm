@@ -12,6 +12,38 @@ import RegisterPage from './pages/RegisterPage'
 import UserManagementPage from './pages/UserManagementPage'
 import './index.css'
 
+// Protected Route component for authenticated users (chatbot)
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth()
+  
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #298a1a 0%, #ced50f 100%)'
+      }}>
+        <div style={{ 
+          background: 'white', 
+          padding: '40px', 
+          borderRadius: '16px',
+          textAlign: 'center'
+        }}>
+          Loading...
+        </div>
+      </div>
+    )
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+  
+  return children
+}
+
 // Protected Route component for admin pages
 function ProtectedAdminRoute({ children }) {
   const { user, loading, isAdmin } = useAuth()
@@ -34,12 +66,18 @@ function ProtectedAdminRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<ChatPage />} />
+      {/* Auth Routes (Public) */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Admin Routes (Protected) */}
+      {/* Chatbot Route (Protected - requires login) */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <ChatPage />
+        </ProtectedRoute>
+      } />
+
+      {/* Admin Routes (Protected - requires admin role) */}
       <Route path="/admin" element={
         <ProtectedAdminRoute>
           <AdminLayout />
