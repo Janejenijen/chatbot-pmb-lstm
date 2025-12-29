@@ -173,3 +173,12 @@ class ChatService:
         )
         
         return response, tag, confidence
+    
+    def mark_as_processed(self, log_id: int) -> bool:
+        """Mark a chat log as processed (is_new_data = False)."""
+        log = self.db.query(ChatLog).filter(ChatLog.id == log_id).first()
+        if not log:
+            return False
+        log.is_new_data = False
+        self.db.commit()
+        return True

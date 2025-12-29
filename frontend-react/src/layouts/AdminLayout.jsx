@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, MessageSquare, History, Settings, Menu, X, BarChart3 } from 'lucide-react'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { LayoutDashboard, MessageSquare, History, Settings, Menu, X, BarChart3, Users, LogOut } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import './AdminLayout.css'
 
 function AdminLayout() {
+  const { user, logout, isAdmin } = useAuth()
+  const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const toggleSidebar = () => {
@@ -12,6 +15,17 @@ function AdminLayout() {
 
   const closeSidebar = () => {
     setIsSidebarOpen(false)
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
+  // Redirect non-admin users
+  if (user && !isAdmin()) {
+    navigate('/')
+    return null
   }
 
   return (
@@ -38,6 +52,19 @@ function AdminLayout() {
             <X size={20} />
           </button>
         </div>
+        
+        {/* User Info */}
+        {user && (
+          <div style={{ 
+            padding: '12px 16px', 
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            fontSize: '13px',
+            color: 'rgba(255,255,255,0.7)'
+          }}>
+            <div style={{ fontWeight: '600', color: 'white' }}>{user.full_name}</div>
+            <div style={{ opacity: 0.7 }}>{user.email}</div>
+          </div>
+        )}
         
         <nav className="sidebar-nav">
           <NavLink 
@@ -73,6 +100,14 @@ function AdminLayout() {
             <BarChart3 size={20} />
             <span>Training History</span>
           </NavLink>
+          <NavLink 
+            to="/admin/users" 
+            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={closeSidebar}
+          >
+            <Users size={20} />
+            <span>Pengguna</span>
+          </NavLink>
           <div className="nav-divider"></div>
           <NavLink 
             to="/" 
@@ -83,6 +118,21 @@ function AdminLayout() {
             <Settings size={20} />
             <span>Live Chatbot</span>
           </NavLink>
+          <button 
+            className="nav-item"
+            onClick={handleLogout}
+            style={{ 
+              width: '100%', 
+              textAlign: 'left', 
+              background: 'none', 
+              border: 'none',
+              color: '#ef4444',
+              cursor: 'pointer'
+            }}
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
         </nav>
       </aside>
 

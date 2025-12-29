@@ -95,6 +95,16 @@ function IntentPage() {
     }
   }
 
+  const handleDismiss = async (logId) => {
+    try {
+      const res = await fetch(`${API_URL}/chat/dismiss/${logId}`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed to dismiss')
+      fetchNewData()
+    } catch (err) {
+      alert(`Error: ${err.message}`)
+    }
+  }
+
   const openAssignModal = (log) => {
     setSelectedLog(log)
     setShowAssignModal(true)
@@ -200,13 +210,23 @@ function IntentPage() {
                       </span>
                     </td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <button 
-                        className="btn btn-sm" 
-                        style={{ fontSize: '12px', padding: '4px 8px', background: '#3b82f6', color: 'white' }}
-                        onClick={() => openAssignModal(item)}
-                      >
-                        <Plus size={14} style={{ marginRight: '4px' }}/> Tambah ke Dataset
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <button 
+                          className="btn btn-sm" 
+                          style={{ fontSize: '12px', padding: '4px 8px', background: '#3b82f6', color: 'white' }}
+                          onClick={() => openAssignModal(item)}
+                        >
+                          <Plus size={14} style={{ marginRight: '4px' }}/> Tambah ke Dataset
+                        </button>
+                        <button 
+                          className="btn btn-sm" 
+                          style={{ fontSize: '12px', padding: '4px 8px', background: '#f1f5f9', color: '#64748b' }}
+                          onClick={() => handleDismiss(item.id)}
+                          title="Abaikan data ini"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
