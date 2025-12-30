@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from controller.chat_controller import ChatController
-from schemas.chat import ChatRequest, ChatResponse, ChatHistoryResponse
+from schemas.chat import ChatRequest, ChatResponse, ChatHistoryResponse, AssignIntentRequest
 
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -36,3 +36,36 @@ def get_chat_history(
     """
     controller = ChatController(db)
     return controller.get_chat_history(limit=limit, offset=offset)
+
+@router.get("/new-data")
+def get_new_data_candidates(db: Session = Depends(get_db)):
+    """
+    Get all new user questions that haven't been trained yet.
+    """
+    controller = ChatController(db)
+    return controller.get_new_data()
+
+@router.post("/assign")
+def assign_to_intent(request: AssignIntentRequest, db: Session = Depends(get_db)):
+    """
+    Assign a new user question to an intent and mark it as processed.
+    """
+    controller = ChatController(db)
+    return controller.assign_to_intent(request)
+
+
+@router.post("/dismiss/{log_id}")
+def dismiss_new_data(log_id: int, db: Session = Depends(get_db)):
+    """
+    Dismiss a new data entry (mark as processed without adding to dataset).
+    Sets is_new_data = False so it won't appear in the new data inbox.
+    """
+    from service.chat_service import ChatService
+    service = ChatService(db)
+    success = service.mark_as_processed(log_id)
+    
+    if not success:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Data tidak ditemukan")
+    
+    return {"message": "Data berhasil di-dismiss"}

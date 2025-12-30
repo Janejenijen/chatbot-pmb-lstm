@@ -103,6 +103,14 @@ class IntentService:
         self.db.commit()
         return True
     
+    def add_pattern(self, intent_id: int, pattern_text: str) -> Pattern:
+        """Add a single pattern to an intent."""
+        pattern = Pattern(intent_id=intent_id, pattern_text=pattern_text)
+        self.db.add(pattern)
+        self.db.commit()
+        self.db.refresh(pattern)
+        return pattern
+    
     def sync_from_json(self) -> int:
         """Import intents from JSON file to database."""
         try:

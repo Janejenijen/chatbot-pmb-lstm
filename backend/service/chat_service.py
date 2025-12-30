@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-from schema.models import ChatLog, Intent
+from schema.models import ChatLog, Intent, Pattern
 from config.settings import get_settings
 from utils.nlp_utils import preprocess_text
 
@@ -19,7 +19,7 @@ class ChatService:
     _model = None
     _tokenizer = None
     _encoder = None
-    _max_len = 20
+    _max_len = None  # Will be set from settings
     
     def __init__(self, db: Session):
         self.db = db
@@ -33,11 +33,13 @@ class ChatService:
                 cls._model = load_model(settings.MODEL_PATH)
                 cls._tokenizer = pickle.load(open(settings.TOKENIZER_PATH, 'rb'))
                 cls._encoder = pickle.load(open(settings.ENCODER_PATH, 'rb'))
+                cls._max_len = settings.MAX_SEQUENCE_LENGTH
             except Exception as e:
                 print(f"Warning: Could not load model files: {e}")
                 cls._model = None
                 cls._tokenizer = None
                 cls._encoder = None
+                cls._max_len = settings.MAX_SEQUENCE_LENGTH
     
     @classmethod
     def reload_model(cls):
@@ -94,14 +96,32 @@ class ChatService:
         user_message: str, 
         bot_response: str, 
         intent_tag: Optional[str] = None,
-        confidence: Optional[float] = None
+        confidence: Optional[float] = None,
+        is_new_data: bool = True
     ) -> ChatLog:
         """Save chat interaction to database."""
+        
+        # Duplicate Check Logic
+        # 1. Check if message already exists in trained patterns (case-insensitive)
+        exists_in_patterns = self.db.query(Pattern).filter(
+            Pattern.pattern_text.ilike(user_message)
+        ).first() is not None
+        
+        # 2. Check if message already exists in new data queue (prevent duplicates in inbox)
+        exists_in_queue = self.db.query(ChatLog).filter(
+            ChatLog.user_message.ilike(user_message),
+            ChatLog.is_new_data == True
+        ).first() is not None
+        
+        # If exists in either, it's not "new data" for the dataset
+        final_is_new_data = is_new_data and not exists_in_patterns and not exists_in_queue
+        
         chat_log = ChatLog(
             user_message=user_message,
             bot_response=bot_response,
             intent_tag=intent_tag,
-            confidence=confidence
+            confidence=confidence,
+            is_new_data=final_is_new_data
         )
         self.db.add(chat_log)
         self.db.commit()
@@ -118,6 +138,24 @@ class ChatService:
             .all()
         return logs, total
     
+    def get_new_data_candidates(self) -> List[ChatLog]:
+        """Get unique chat logs marked as new data."""
+        # We might want to group by user_message to be safe, but our save logic handles duplicates.
+        # Just return the latest ones or all.
+        return self.db.query(ChatLog)\
+            .filter(ChatLog.is_new_data == True)\
+            .order_by(ChatLog.created_at.desc())\
+            .all()
+    
+    def mark_as_processed(self, log_id: int) -> bool:
+        """Mark a chat log as processed (not new data)."""
+        log = self.db.query(ChatLog).filter(ChatLog.id == log_id).first()
+        if log:
+            log.is_new_data = False
+            self.db.commit()
+            return True
+        return False
+
     def chat(self, message: str) -> Tuple[str, Optional[str], float]:
         """
         Main chat function: process message, save to DB, return response.
@@ -135,3 +173,12 @@ class ChatService:
         )
         
         return response, tag, confidence
+    
+    def mark_as_processed(self, log_id: int) -> bool:
+        """Mark a chat log as processed (is_new_data = False)."""
+        log = self.db.query(ChatLog).filter(ChatLog.id == log_id).first()
+        if not log:
+            return False
+        log.is_new_data = False
+        self.db.commit()
+        return True

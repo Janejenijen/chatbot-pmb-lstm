@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     TOKENIZER_PATH: str = "model/tokenizer.pkl"
     ENCODER_PATH: str = "model/label_encoder.pkl"
     DATASET_PATH: str = "dataset/intents.json"
+    MAX_SEQUENCE_LENGTH: int = 20
+    
+    # Training hyperparameters
+    BATCH_SIZE: int = 8
+    VALIDATION_SPLIT: float = 0.15  # 15% for validation
+    TEST_SPLIT: float = 0.15  # 15% for testing
     
     # API settings
     API_PREFIX: str = "/api"

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import './ChatBot.css'
 import logoDelasalle from '../assets/logo-delasalle.png'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = 'http://localhost:8000/api'
 
 function ChatBot() {
   const [messages, setMessages] = useState([
@@ -42,7 +42,7 @@ function ChatBot() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -80,7 +80,7 @@ function ChatBot() {
     'Apa itu PMB?',
     'Jadwal pendaftaran',
     'Biaya pendaftaran',
-    'Persyaratan',
+    'Persyaratan Pendaftaran',
   ]
 
   const handleSuggestionClick = (question) => {
@@ -97,7 +97,7 @@ function ChatBot() {
         </div>
         <div className="header-info">
           <h1>Chatbot PMB</h1>
-          <p>UK De La Salle Manado</p>
+          <p>Unika De La Salle Manado</p>
         </div>
         <div className="header-status">
           <span className="status-dot"></span>

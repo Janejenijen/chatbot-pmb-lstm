@@ -1,25 +1,47 @@
 import { useState, useEffect } from 'react'
-import { Trash2, Edit2, Plus, Brain, Database, Check } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Trash2, Edit2, Plus, Brain, Database, Check, ChevronRight, X, Settings } from 'lucide-react'
 
 const API_URL = 'http://localhost:8000/api'
 
 function IntentPage() {
+  const navigate = useNavigate()
   const [intents, setIntents] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
   const [isRetraining, setIsRetraining] = useState(false)
-  const [editingIntent, setEditingIntent] = useState(null)
   
-  // Form state
-  const [formData, setFormData] = useState({
-    tag: '',
-    patterns: '',
-    responses: ''
-  })
+  // Assignment Modal State
+  const [showAssignModal, setShowAssignModal] = useState(false)
+  const [selectedLog, setSelectedLog] = useState(null)
+  
+  // New Intent Modal State
+  const [showNewIntentModal, setShowNewIntentModal] = useState(false)
+  const [newIntentTag, setNewIntentTag] = useState('')
+
+  // Retrain Modal State
+  const [showRetrainModal, setShowRetrainModal] = useState(false)
+  const [retrainEpochs, setRetrainEpochs] = useState(100)
+  const [retrainSplitRatio, setRetrainSplitRatio] = useState('70:30')
+
+  /* New Data State */
+  const [newData, setNewData] = useState([])
 
   useEffect(() => {
     fetchIntents()
+    fetchNewData()
   }, [])
+
+  const fetchNewData = async () => {
+    try {
+      const res = await fetch(`${API_URL}/chat/new-data`)
+      if (res.ok) {
+        const data = await res.json()
+        setNewData(data)
+      }
+    } catch (err) {
+      console.error("Failed to fetch new data", err)
+    }
+  }
 
   const fetchIntents = async () => {
     try {
@@ -34,16 +56,25 @@ function IntentPage() {
   }
 
   const handleRetrain = async () => {
-    if (!confirm('Apakah anda yakin ingin melatih ulang model? Ini mungkin memakan waktu.')) return
-    
+    setShowRetrainModal(false)
     setIsRetraining(true)
+    
     try {
-      const res = await fetch(`${API_URL}/intents/retrain`, { method: 'POST' })
+      const res = await fetch(
+        `${API_URL}/intents/retrain?epochs=${retrainEpochs}&split_ratio=${retrainSplitRatio}`, 
+        { method: 'POST' }
+      )
       const data = await res.json()
       
       if (!res.ok) throw new Error(data.detail || 'Gagal melatih model')
       
-      alert(data.message)
+      // Navigate to training detail page
+      if (data.training_id) {
+        navigate(`/admin/training/${data.training_id}`)
+      } else {
+        alert(data.message)
+        fetchNewData()
+      }
     } catch (err) {
       console.error(err)
       alert(`Error: ${err.message}`)
@@ -52,88 +83,76 @@ function IntentPage() {
     }
   }
 
-  const handleSave = async (e) => {
-    e.preventDefault()
-    
-    // Convert newlines to arrays
-    const payload = {
-      tag: formData.tag,
-      patterns: formData.patterns.split('\n').filter(s => s.trim()),
-      responses: formData.responses.split('\n').filter(s => s.trim())
-    }
-
-    try {
-      let res
-      if (editingIntent) {
-        // Update
-        res = await fetch(`${API_URL}/intents/${editingIntent.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-      } else {
-        // Create
-        res = await fetch(`${API_URL}/intents/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-      }
-      
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.detail || 'Failed to save intent')
-      }
-      
-      setShowForm(false)
-      setEditingIntent(null)
-      fetchIntents()
-      setFormData({ tag: '', patterns: '', responses: '' })
-    } catch (err) {
-      console.error(err)
-      alert(`Error saving intent: ${err.message}`)
-    }
-  }
-
-  const handleEdit = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/intents/${id}`)
-      if (!res.ok) throw new Error('Failed to fetch details')
-      
-      const data = await res.json()
-      setEditingIntent(data)
-      setFormData({
-        tag: data.tag,
-        patterns: data.patterns.map(p => p.pattern_text).join('\n'),
-        responses: data.responses.map(r => r.response_text).join('\n')
-      })
-      setShowForm(true)
-    } catch (err) {
-      console.error(err)
-      alert(`Error: ${err.message}`)
-    }
-  }
-
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, e) => {
+    e.stopPropagation()
     if (!confirm('Hapus intent ini?')) return
     try {
       const res = await fetch(`${API_URL}/intents/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.detail || 'Failed to delete')
-      }
+      if (!res.ok) throw new Error('Failed to delete')
       fetchIntents()
     } catch (err) {
-      console.error(err)
       alert(`Error deleting: ${err.message}`)
     }
   }
 
-  // Helper to reset form
-  const openNewForm = () => {
-    setEditingIntent(null)
-    setFormData({ tag: '', patterns: '', responses: '' })
-    setShowForm(true)
+  const handleDismiss = async (logId) => {
+    try {
+      const res = await fetch(`${API_URL}/chat/dismiss/${logId}`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed to dismiss')
+      fetchNewData()
+    } catch (err) {
+      alert(`Error: ${err.message}`)
+    }
+  }
+
+  const openAssignModal = (log) => {
+    setSelectedLog(log)
+    setShowAssignModal(true)
+  }
+
+  const handleAssign = async (intentId) => {
+    try {
+        const res = await fetch(`${API_URL}/chat/assign`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                log_id: selectedLog.id,
+                intent_id: intentId,
+                pattern_text: selectedLog.user_message
+            })
+        })
+        
+        if (!res.ok) throw new Error('Failed to assign')
+        
+        setShowAssignModal(false)
+        setSelectedLog(null)
+        fetchNewData()
+    } catch (err) {
+        alert(err.message)
+    }
+  }
+  
+  const createNewIntent = async (e) => {
+      e.preventDefault()
+      try {
+          const res = await fetch(`${API_URL}/intents/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  tag: newIntentTag,
+                  patterns: ['Contoh pertanyaan'],
+                  responses: ['Contoh jawaban']
+              })
+          })
+          if (!res.ok) throw new Error('Failed')
+          
+          const data = await res.json()
+          setShowNewIntentModal(false)
+          setNewIntentTag('')
+          navigate(`/admin/intents/${data.id}`)
+      } catch (err) {
+          alert(err.message)
+      }
   }
 
   if (loading) return <div>Loading...</div>
@@ -148,7 +167,7 @@ function IntentPage() {
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
             className="btn btn-secondary" 
-            onClick={handleRetrain} 
+            onClick={() => setShowRetrainModal(true)} 
             disabled={isRetraining}
           >
             {isRetraining ? (
@@ -157,62 +176,67 @@ function IntentPage() {
               <><Brain size={18} /> Retrain Model</>
             )}
           </button>
-          <button className="btn btn-primary" onClick={openNewForm}>
+          <button className="btn btn-primary" onClick={() => setShowNewIntentModal(true)}>
             <Plus size={18} /> Tambah Intent
           </button>
         </div>
       </div>
 
-      {showForm && (
-        <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
-          <h3 style={{ marginBottom: '16px' }}>{editingIntent ? 'Edit Intent' : 'Tambah Intent Baru'}</h3>
-          <form onSubmit={handleSave}>
-            <div className="form-group">
-              <label>Tag (Kategori)</label>
-              <input 
-                className="form-control" 
-                value={formData.tag} 
-                onChange={e => setFormData({...formData, tag: e.target.value})}
-                placeholder="misal: info_biaya"
-                required
-              />
-            </div>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div className="form-group">
-                <label>Patterns (Pertanyaan User)</label>
-                <small style={{ display: 'block', color: '#64748b', marginBottom: '8px' }}>Satu baris satu kalimat</small>
-                <textarea 
-                  className="form-control" 
-                  rows="6"
-                  value={formData.patterns}
-                  onChange={e => setFormData({...formData, patterns: e.target.value})}
-                  placeholder="Berapa biayanya?&#10;Biaya pendaftaran berapa?"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Responses (Jawaban Bot)</label>
-                <small style={{ display: 'block', color: '#64748b', marginBottom: '8px' }}>Satu baris satu variasi jawaban</small>
-                <textarea 
-                  className="form-control" 
-                  rows="6"
-                  value={formData.responses}
-                  onChange={e => setFormData({...formData, responses: e.target.value})}
-                  placeholder="Biaya pendaftaran adalah Rp 150.000"
-                  required
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-              <button type="submit" className="btn btn-primary">Simpan</button>
-              <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Batal</button>
-            </div>
-          </form>
+      {newData.length > 0 && (
+        <div className="card" style={{ marginBottom: '24px', border: '1px solid #3b82f6' }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eff6ff' }}>
+            <h3 style={{ margin: 0, color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Database size={18} />
+              Inbox Pertanyaan Baru ({newData.length})
+            </h3>
+            <small style={{ color: '#1e40af' }}>Data ini belum dilatih</small>
+          </div>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+              <thead style={{ position: 'sticky', top: 0, background: '#fff' }}>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px' }}>Pertanyaan User</th>
+                  <th style={{ padding: '12px' }}>Prediksi Intent</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {newData.map((item) => (
+                  <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', fontWeight: '500' }}>{item.user_message}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span className="badge" style={{ background: '#e2e8f0', color: '#475569' }}>
+                        {item.predicted_intent || '?'} ({Math.round(item.confidence * 100)}%)
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <button 
+                          className="btn btn-sm" 
+                          style={{ fontSize: '12px', padding: '4px 8px', background: '#3b82f6', color: 'white' }}
+                          onClick={() => openAssignModal(item)}
+                        >
+                          <Plus size={14} style={{ marginRight: '4px' }}/> Tambah ke Dataset
+                        </button>
+                        <button 
+                          className="btn btn-sm" 
+                          style={{ fontSize: '12px', padding: '4px 8px', background: '#f1f5f9', color: '#64748b' }}
+                          onClick={() => handleDismiss(item.id)}
+                          title="Abaikan data ini"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
+      {/* Main Intent List */}
       <div className="card">
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -225,7 +249,12 @@ function IntentPage() {
           </thead>
           <tbody>
             {intents.map((intent) => (
-              <tr key={intent.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+              <tr 
+                key={intent.id} 
+                style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer' }}
+                onClick={() => navigate(`/admin/intents/${intent.id}`)}
+                className="hover-row"
+              >
                 <td style={{ padding: '16px', verticalAlign: 'top', fontWeight: '500' }}>
                   <span className="badge">{intent.tag}</span>
                 </td>
@@ -236,24 +265,195 @@ function IntentPage() {
                   {intent.response_count} responses
                 </td>
                 <td style={{ padding: '16px', textAlign: 'right', verticalAlign: 'top' }}>
-                  <button 
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', marginRight: '8px' }}
-                    onClick={() => handleEdit(intent.id)}
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  <button 
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-                    onClick={() => handleDelete(intent.id)}
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                   <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '4px' }}>
+                      <ChevronRight size={18} color="#94a3b8" />
+                      <button 
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                        onClick={(e) => handleDelete(intent.id, e)}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      
+      {/* Retrain Modal */}
+      {showRetrainModal && (
+          <div style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+              <div style={{ background: 'white', padding: '24px', borderRadius: '8px', width: '420px', maxWidth: '90%' }}>
+                  <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Brain size={24} color="#3b82f6" />
+                    Konfigurasi Training
+                  </h3>
+                  
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ fontWeight: '500', marginBottom: '6px', display: 'block' }}>
+                        Split Ratio (Train : Test)
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <label style={{ 
+                          flex: 1, 
+                          padding: '12px', 
+                          border: retrainSplitRatio === '70:30' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                          borderRadius: '8px', 
+                          cursor: 'pointer',
+                          background: retrainSplitRatio === '70:30' ? '#eff6ff' : 'white',
+                          textAlign: 'center'
+                        }}>
+                          <input 
+                            type="radio" 
+                            name="splitRatio" 
+                            value="70:30"
+                            checked={retrainSplitRatio === '70:30'}
+                            onChange={(e) => setRetrainSplitRatio(e.target.value)}
+                            style={{ display: 'none' }}
+                          />
+                          <div style={{ fontWeight: '600', fontSize: '18px' }}>70 : 30</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Train : Test</div>
+                        </label>
+                        <label style={{ 
+                          flex: 1, 
+                          padding: '12px', 
+                          border: retrainSplitRatio === '80:20' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                          borderRadius: '8px', 
+                          cursor: 'pointer',
+                          background: retrainSplitRatio === '80:20' ? '#eff6ff' : 'white',
+                          textAlign: 'center'
+                        }}>
+                          <input 
+                            type="radio" 
+                            name="splitRatio" 
+                            value="80:20"
+                            checked={retrainSplitRatio === '80:20'}
+                            onChange={(e) => setRetrainSplitRatio(e.target.value)}
+                            style={{ display: 'none' }}
+                          />
+                          <div style={{ fontWeight: '600', fontSize: '18px' }}>80 : 20</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Train : Test</div>
+                        </label>
+                      </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '20px' }}>
+                      <label style={{ fontWeight: '500', marginBottom: '6px', display: 'block' }}>
+                        Epochs
+                      </label>
+                      <input 
+                        type="number" 
+                        className="form-control"
+                        value={retrainEpochs} 
+                        onChange={(e) => setRetrainEpochs(parseInt(e.target.value) || 100)}
+                        min={10}
+                        max={500}
+                        style={{ width: '100%' }}
+                      />
+                      <small style={{ color: '#64748b' }}>Jumlah iterasi training (10-500)</small>
+                  </div>
+
+                  <div style={{ 
+                    background: '#f8fafc', 
+                    padding: '12px', 
+                    borderRadius: '8px', 
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                    color: '#64748b'
+                  }}>
+                    <strong>Info:</strong> Training akan menggunakan {intents.length} intents dari database. 
+                    Hasil training akan disimpan di Training History.
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        className="btn btn-primary" 
+                        onClick={handleRetrain}
+                        style={{ flex: 1 }}
+                      >
+                        <Brain size={18} /> Mulai Training
+                      </button>
+                      <button 
+                        className="btn btn-secondary" 
+                        onClick={() => setShowRetrainModal(false)}
+                      >
+                        Batal
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+      
+      {/* Assign Modal */}
+      {showAssignModal && (
+          <div style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+              <div style={{ background: 'white', padding: '24px', borderRadius: '8px', width: '400px', maxWidth: '90%' }}>
+                  <h3 style={{ marginTop: 0 }}>Pilih Intent Tujuan</h3>
+                  <p>Masukkan "{selectedLog?.user_message}" ke dalam:</p>
+                  
+                  <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '4px', marginBottom: '16px' }}>
+                      {intents.map(i => (
+                          <div 
+                            key={i.id} 
+                            style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}
+                            className="hover-bg"
+                            onClick={() => handleAssign(i.id)}
+                          >
+                              <div style={{ fontWeight: '500' }}>{i.tag}</div>
+                          </div>
+                      ))}
+                  </div>
+                  
+                   <button 
+                      className="btn btn-secondary" 
+                      onClick={() => setShowAssignModal(false)}
+                      style={{ width: '100%' }}
+                   >
+                      Batal
+                   </button>
+              </div>
+          </div>
+      )}
+      
+      {/* New Intent Modal */}
+      {showNewIntentModal && (
+           <div style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+               <div style={{ background: 'white', padding: '24px', borderRadius: '8px', width: '400px', maxWidth: '90%' }}>
+                  <h3 style={{ marginTop: 0 }}>Buat Intent Baru</h3>
+                  <form onSubmit={createNewIntent}>
+                      <div className="form-group">
+                          <label>Nama Tag</label>
+                          <input 
+                            className="form-control" 
+                            value={newIntentTag} 
+                            onChange={e => setNewIntentTag(e.target.value)}
+                            placeholder="misal: info_beasiswa" 
+                            required 
+                          />
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                          <button type="submit" className="btn btn-primary">Buat</button>
+                          <button type="button" className="btn btn-secondary" onClick={() => setShowNewIntentModal(false)}>Batal</button>
+                      </div>
+                  </form>
+               </div>
+          </div>
+      )}
+      
+      <style>{`
+        .hover-row:hover { background-color: #f8fafc; }
+        .hover-bg:hover { background-color: #f1f5f9; }
+      `}</style>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config.database import Base
@@ -62,7 +62,62 @@ class ChatLog(Base):
     bot_response = Column(Text, nullable=False)
     intent_tag = Column(String(100), nullable=True)
     confidence = Column(Float, nullable=True)
+    is_new_data = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     def __repr__(self):
         return f"<ChatLog(id={self.id}, intent='{self.intent_tag}')>"
+
+
+class TrainingHistory(Base):
+    """TrainingHistory table - stores training run results."""
+    __tablename__ = "training_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    trained_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Training configuration
+    epochs_requested = Column(Integer, nullable=False)
+    epochs_run = Column(Integer, nullable=False)
+    split_ratio = Column(String(10), nullable=False)  # "70:30" or "80:20"
+    batch_size = Column(Integer, nullable=False)
+    
+    # Sample counts
+    total_samples = Column(Integer, nullable=False)
+    train_samples = Column(Integer, nullable=False)
+    val_samples = Column(Integer, nullable=False)
+    test_samples = Column(Integer, nullable=False)
+    num_classes = Column(Integer, nullable=False)
+    
+    # Metrics
+    train_accuracy = Column(Float, nullable=False)
+    val_accuracy = Column(Float, nullable=False)
+    test_accuracy = Column(Float, nullable=False)
+    train_loss = Column(Float, nullable=False)
+    val_loss = Column(Float, nullable=False)
+    test_loss = Column(Float, nullable=False)
+    
+    # Confusion matrix & classification report (stored as JSON strings)
+    confusion_matrix = Column(Text, nullable=True)  # JSON 2D array
+    classification_report = Column(Text, nullable=True)  # JSON object
+    class_names = Column(Text, nullable=True)  # JSON array of class names
+    
+    def __repr__(self):
+        return f"<TrainingHistory(id={self.id}, trained_at='{self.trained_at}', test_acc={self.test_accuracy:.2f})>"
+
+
+class User(Base):
+    """User table - stores user accounts with roles."""
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    whatsapp = Column(String(20), nullable=True)
+    role = Column(String(20), default="user", nullable=False)  # "admin" or "user"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    def __repr__(self):
+        return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"
